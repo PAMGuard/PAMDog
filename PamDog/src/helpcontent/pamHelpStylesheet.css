@@ -1,0 +1,46 @@
+BODY {
+	BACKGROUND-COLOR: FFFFFF
+}
+H1 {
+	FONT-FAMILY: Arial;
+	FONT-SIZE: 22;
+	COLOR: #6698FE;
+	BACKGROUND-COLOR: #DCFEEC;
+	margin-bottom: 0
+}
+H2 {
+	FONT-FAMILY: Arial;
+	FONT-SIZE: 20;
+	COLOR: #6698FE;
+	BACKGROUND-COLOR: #CBDAEB;
+	margin-top: 5;
+}
+H3 {
+	margin-top: 5; 
+	FONT-FAMILY: Arial;
+	FONT-SIZE: 18;
+	COLOR: #6698FE;
+}
+
+H4 {
+	margin-top: 5; 
+	FONT-FAMILY: Arial;
+	FONT-SIZE: 15;
+	COLOR: #6698FE;
+}
+
+H5 {
+	FONT-FAMILY: Arial;
+	FONT-SIZE: 14;
+	font-style: italic;
+	font-weight: normal;
+	COLOR: #6698FE;
+}
+
+p {
+	FONT-FAMILY: Arial;
+	FONT-SIZE: 14;
+	margin-top: 0; 
+	margin-left: 0; 
+	margin-bottom: 10
+}
