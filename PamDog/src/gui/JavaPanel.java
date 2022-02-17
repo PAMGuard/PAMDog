@@ -4,7 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -20,6 +23,8 @@ public class JavaPanel implements DogDialogPanel {
 	private JTextField minMem, maxMem;
 	private DogDialog dogDialog;
 	private JTextField otherVMOptions;
+	private JButton defaultsButton;
+	
 	public JavaPanel(DogDialog dogDialog) {
 		this.dogDialog = dogDialog;
 		mainPanel = new JPanel(new BorderLayout());
@@ -50,6 +55,10 @@ public class JavaPanel implements DogDialogPanel {
 		northPanel.add(new JLabel("Other VM command line options", SwingConstants.LEFT), c);
 		c.gridy++;
 		northPanel.add(otherVMOptions = new JTextField(35), c);
+		c.gridx = 0;
+		c.gridy++;
+		c.gridwidth = 2;
+		northPanel.add(defaultsButton = new JButton("Restore Java defaults"), c);
 		
 		String tip = "<html>Select a Java executable (java.exe) installed on your computer. This will usually<br>"
 				+ "be found in C:\\Program Files\\Java\\jre****\\bin\\java.exe for the 64 bit<br>"
@@ -60,6 +69,20 @@ public class JavaPanel implements DogDialogPanel {
 		maxMem.setToolTipText(minMem.getToolTipText());
 		otherVMOptions.setToolTipText("Other options for the Java virtual machine (generally not needed)");
 		
+
+		defaultsButton.setToolTipText("Restore values to default settings from the current PAMGuard installation");
+		
+		defaultsButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				restoreDefaults();
+			}
+		});
+	}
+
+	protected void restoreDefaults() {
+		dogDialog.getDogControl().restoreJavaDefaults();
+		setParams(dogDialog.getDogControl().getParams());
 	}
 
 	@Override

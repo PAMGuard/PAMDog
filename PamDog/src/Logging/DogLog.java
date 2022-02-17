@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.TimeZone;
 
+import pamdog.ConfigSettings;
+import pamdog.DogControl;
 import pamdog.DogUDP;
 import pamdog.IdleFunction;
 import pamdog.UdpCommands;
@@ -40,7 +42,10 @@ public class DogLog {
 	 */
 	private long logHistory = 600;
 
-	public DogLog(String logTitle, boolean logToFile) {
+	private DogControl dogControl;
+
+	public DogLog(DogControl dogControl, String logTitle, boolean logToFile) {
+		this.dogControl = dogControl;
 		this.logTitle = logTitle;
 		this.logToFile = logToFile;
 		this.broadcastUDP = false;
@@ -198,7 +203,7 @@ public class DogLog {
 	}
 	
 	public static String getLogFolder() {
-		return IdleFunction.getPamguardFolder() + File.separator + "doglogs";
+		return ConfigSettings.getPamguardFolder() + File.separator + "doglogs";
 	}
 
 	private String createFileName(long now) {

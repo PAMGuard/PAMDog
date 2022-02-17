@@ -4,9 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -24,6 +27,7 @@ public class PamguardPanel implements DogDialogPanel, RootProvider {
 	private FileDialogPanel libFolder;
 	private DogDialog dogDialog; 
 	private JTextField otherOptions;
+	private JButton defaultsButton;
 	
 	public PamguardPanel(DogDialog dogDialog) {
 		this.dogDialog = dogDialog;
@@ -56,12 +60,29 @@ public class PamguardPanel implements DogDialogPanel, RootProvider {
 		JPanel optsLeft = new JPanel(new BorderLayout());
 		optsLeft.add(BorderLayout.WEST, optspanel);
 		mainPanel.add(optsLeft);
+		
+		JPanel defaultsPanel = new JPanel(new BorderLayout());
+		defaultsPanel.add(BorderLayout.WEST, defaultsButton = new JButton("Restore defaults"));
+		mainPanel.add(defaultsPanel);
 
 		workingDirectory.setToolTipText("Folder containing the PAMGuard executable jar file, e.g. C:\\Program Files\\Pamguard64");
 		pamguardJar.setToolTipText("PAMGuard executable jar file, e.g. Pamguard_*_**_**.jar");
 		psfFile.setToolTipText("PAMGuard configuration (*.psf) file");
 		libFolder.setToolTipText("PAMGuard library path (usually lib for 32 bit and lib64 for 64 bit versions)");
 		otherOptions.setToolTipText("Other PAMGuard options (generally not required)");
+		defaultsButton.setToolTipText("Restore values to default settings from the current PAMGuard installation");
+		
+		defaultsButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				restoreDefaults();
+			}
+		});
+	}
+
+	protected void restoreDefaults() {
+		dogDialog.getDogControl().restorePamguardDefaults();		
+		setParams(dogDialog.getDogControl().getParams());
 	}
 
 	@Override

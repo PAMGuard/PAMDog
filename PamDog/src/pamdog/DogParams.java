@@ -16,13 +16,13 @@ public class DogParams implements Serializable, Cloneable {
 	public static final long serialVersionUID = 1L;
 	
 	private boolean activeDog = false;
-	private String workingFolder = "C:\\Program Files\\Pamguard64";
+	private String workingFolder = null;
 	private String javaFile = "";
 	private String jre = "";
 	private String psfFile = ""; 
-	private String libFolder = "lib64";
-	private int mxMemory = 1024;
-	private int msMemory = 512;
+	private String libFolder = "lib6";
+	private int mxMemory = 4096;
+	private int msMemory = 2048;
 	private int udpPort = 8000;
 	private boolean broadcastErrors = false;
 	private int udpPortErrors = 8100;
@@ -51,6 +51,10 @@ public class DogParams implements Serializable, Cloneable {
 	static final int maxPCRestarts = 20;
 	
 	
+	
+	public DogParams() {
+		super();
+	}
 	
 	/**
 	 * @return the javaFile

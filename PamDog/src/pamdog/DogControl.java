@@ -11,8 +11,11 @@ import javax.swing.SwingWorker;
 
 import pamdog.RestartInfo.RestartType;
 import Logging.DogLog;
+import gui.DogDialog;
 
 public class DogControl extends SwingWorker<Integer, ControlMessage> {
+
+	private DogParams dogParams = new DogParams();
 
 	private IdleFunction idleFunction;
 
@@ -24,16 +27,40 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 
 	private Object processSynch = new Object();
 
-	private DogLog commandLog = new DogLog("Commands", true);
+	private DogLog commandLog;
 
 	private long controlStart;
+	
+	private ConfigSettings configSettings = new ConfigSettings();
+	
 
-	public DogControl(IdleFunction idleFunction) {
-		this.idleFunction = idleFunction;
+	public ConfigSettings getConfigSettings() {
+		return configSettings;
+	}
+
+	public DogControl() {
+		intialiseSettings();
+		this.idleFunction = new IdleFunction(this);
+		commandLog = new DogLog(this, "Commands", true);
 		dogUDP = idleFunction.getDogUDP();
 		controlStart = System.currentTimeMillis();
+		
+		idleFunction.prepare();
 		setBroadcast();
+		idleFunction.run();
 	
+	}
+
+	private void intialiseSettings() {
+		DogParams newParams = getConfigSettings().loadConfig();
+		if (newParams != null) {
+			dogParams = newParams;
+		}
+		if (getConfigSettings().checkParams(dogParams)) {
+			// true if anything changed, in which case save the params immediately. 
+			getConfigSettings().saveConfig(dogParams);
+		}
+		
 	}
 
 	/**
@@ -41,8 +68,8 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	 */
 	private void setBroadcast() {
 		// if we are broadcasting the errors/commands, tell commandLog
-		if (idleFunction.dogParams.isBroadcastErrors()) {
-			commandLog.setupBroadcast(idleFunction.dogParams.getUdpPortErrors());
+		if (dogParams.isBroadcastErrors()) {
+			commandLog.setupBroadcast(dogParams.getUdpPortErrors());
 		} else {
 			commandLog.stopBroadcasting();
 		}
@@ -63,8 +90,8 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 			// always start with a little rest !
 			sleep(1000);
 
-			if (idleFunction.dogParams.isActiveDog() == false ||
-					System.currentTimeMillis()-controlStart < idleFunction.dogParams.getStartWait() * 1000) {
+			if (dogParams.isActiveDog() == false ||
+					System.currentTimeMillis()-controlStart < dogParams.getStartWait() * 1000) {
 				//				idleFunction.launchPamguard();
 				sleep(1000);
 				continue;
@@ -101,7 +128,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 				}
 				if (startFailures >= 5) {
 					majorErrorCount++;
-					idleFunction.dogParams.addRestart(new RestartInfo(RestartType.RESTARTPAMGUARD, "PAMGuard won't start running"));
+					dogParams.addRestart(new RestartInfo(RestartType.RESTARTPAMGUARD, "PAMGuard won't start running"));
 					commandLog.logItem("In startFailures >= 5");
 					killPamguard();			
 					/**
@@ -121,7 +148,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 					if (++majorErrorCount > 10) {
 						majorErrorAction(majorErrorCount);
 					}
-					idleFunction.dogParams.addRestart(new RestartInfo(RestartType.RESTARTPAMGUARD, "PAMGuard Stalled"));
+					dogParams.addRestart(new RestartInfo(RestartType.RESTARTPAMGUARD, "PAMGuard Stalled"));
 					commandLog.logItem("Because UdpCommands.PAM_STALLED");	
 					killPamguard();		
 					/**
@@ -156,11 +183,11 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	 */
 	private boolean condsiderRestart() {
 		long now = System.currentTimeMillis();
-		int killCount = idleFunction.dogParams.getRestartCount(RestartType.RESTARTPAMGUARD, now - 600000);
+		int killCount = dogParams.getRestartCount(RestartType.RESTARTPAMGUARD, now - 600000);
 		if (killCount < 5) {
 			return false;
 		}
-		int pcStartCount = idleFunction.dogParams.getRestartCount(RestartType.RESTARTPC, now - 3600*1000*2);
+		int pcStartCount = dogParams.getRestartCount(RestartType.RESTARTPC, now - 3600*1000*2);
 		if (pcStartCount > 5) {
 			return false;
 		}
@@ -311,19 +338,19 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	 * @return true if command issues to system successfully 
 	 */
 	public boolean restartPC() {
-		long lastRestartTime = idleFunction.dogParams.getLastRestartTime();
-		long minRestartTime = idleFunction.dogParams.getMinRestartMinutes() * 60000L;
+		long lastRestartTime = dogParams.getLastRestartTime();
+		long minRestartTime = dogParams.getMinRestartMinutes() * 60000L;
 		if (System.currentTimeMillis() - lastRestartTime < minRestartTime) {
 			return false;
 		}
-		if (idleFunction.dogParams.isAllowSystemRestarts() == false) {
+		if (dogParams.isAllowSystemRestarts() == false) {
 			commandLog.logItem("System restart required but not enabled.");
 			return false;
 		}
-		idleFunction.dogParams.addRestart(new RestartInfo(RestartType.RESTARTPC, "Restart PC"));
-		idleFunction.dogParams.setLastRestartTime(System.currentTimeMillis());
+		dogParams.addRestart(new RestartInfo(RestartType.RESTARTPC, "Restart PC"));
+		dogParams.setLastRestartTime(System.currentTimeMillis());
 		// since the PC is about to be restarted, force immediate saving of the params
-		idleFunction.saveConfig();
+		configSettings.saveConfig(dogParams);
 		
 		String cmd = "shutdown -r -f";
 		commandLog.logItem(cmd);
@@ -338,16 +365,16 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	}
 
 	private boolean launchPamguard(long waitTime) {
-		int freePort = DogUDP.findFreePort(idleFunction.dogParams.getUdpPort(), idleFunction.dogParams.getUdpPort()+10);
+		int freePort = DogUDP.findFreePort(dogParams.getUdpPort(), dogParams.getUdpPort()+10);
 		System.out.println("Free UDP port id is " + freePort);
 		if (freePort <= 0) {
 			commandLog.logItem("Launch Failed: Unable to find free UDP port for comms");
 			return false;
 		}
 		dogUDP.setCurrentUdpPort(freePort);
-		String commandLine = idleFunction.createLaunchString(idleFunction.dogParams, freePort);
+		String commandLine = idleFunction.createLaunchString(dogParams, freePort);
 		try {
-			process = Runtime.getRuntime().exec(commandLine, null, new File(idleFunction.dogParams.getWorkingFolder()));
+			process = Runtime.getRuntime().exec(commandLine, null, new File(dogParams.getWorkingFolder()));
 		} catch (IOException e) {
 			e.printStackTrace();
 			commandLog.logItem("Launch Failed: " + commandLine);
@@ -443,7 +470,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	 */
 	private boolean startPamguard(long waitTime) {
 		String ans = dogUDP.sendCommand(UdpCommands.START, 1000);
-		idleFunction.dogParams.addRestart(new RestartInfo(RestartType.RESTARTRUN, "Sart PAMGuard"));
+		dogParams.addRestart(new RestartInfo(RestartType.RESTARTRUN, "Sart PAMGuard"));
 		long now = System.currentTimeMillis();
 		int curState;
 		while ((curState=getStatus()) != UdpCommands.PAM_RUNNING && 
@@ -527,6 +554,13 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 //		}
 	}
 
+	public void configure() {
+		DogParams newParams = DogDialog.showDialog(dogParams, this);
+		if (newParams != null) {
+			setParams(newParams);
+		}
+	}
+
 	/**
 	 * Called directly from the dialog when the activate checkbox is changed
 	 * @param isActive
@@ -537,7 +571,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 //				return false;
 //			}
 //		}
-		idleFunction.dogParams.setActiveDog(isActive);		
+		dogParams.setActiveDog(isActive);		
 		return isActive;
 	}
 
@@ -547,7 +581,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	 * @param dogParams
 	 */
 	public void setNewParams(DogParams dogParams) {
-		idleFunction.setParams(dogParams);
+		setParams(dogParams);
 		setBroadcast();
 	}
 	
@@ -561,7 +595,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	 * @return true is successful, false otherwise
 	 */
 	public boolean extremeKill() {
-		File javaEXE = new File(idleFunction.dogParams.getJre());
+		File javaEXE = new File(dogParams.getJre());
 		String javaPath = javaEXE.getParent();
 		File jpsEXE = new File(javaPath,"jps.exe");
 		if (jpsEXE.exists()) {
@@ -598,6 +632,29 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 			commandLog.logItem("jps.exe is distributed with the Java JDK and not JRE.  Try pointing the PamDog params to a java.exe within a JDK"); 
 		}
 		return false;
+	}
+
+	public void setParams(DogParams newParams) {
+		dogParams = newParams;
+		getConfigSettings().saveConfig(dogParams);
+	}
+	
+	public DogParams getParams() {
+		return dogParams;
+	}
+
+	/**
+	 * Restore main PAMGuard defaults for the PAMGuard jar file. 
+	 */
+	public void restorePamguardDefaults() {
+		configSettings.loadParmguardDefaults(dogParams);
+	}
+
+	/**
+	 * Restore main PAMGuard defaults for Java and the JRE. 
+	 */
+	public void restoreJavaDefaults() {
+		configSettings.loadJavaDefaults(dogParams);
 	}
 
 

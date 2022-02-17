@@ -29,8 +29,6 @@ import Logging.DogLog;
  */
 public class IdleFunction extends PamDog {
 
-	DogParams dogParams = new DogParams();
-
 	private TrayIcon trayIcon;
 
 	private DogControl dogControl;
@@ -39,19 +37,16 @@ public class IdleFunction extends PamDog {
 	
 	private DogLog pamguardLog;
 
-	public IdleFunction() {
+	public IdleFunction(DogControl dogControl) {
+		this.dogControl = dogControl;
 		dogUDP = new DogUDP(this);
-		if (loadConfig() == false) {
-			saveConfig();
-		}
-		pamguardLog = new DogLog("Pamguard", true);
+		pamguardLog = new DogLog(dogControl, "Pamguard", true);
 	}
 
 	public void run() {
 		/*
 		 * Launch a swing worker thread to do the work. 
 		 */
-		dogControl = new DogControl(this);
 		dogControl.execute();
 	}
 
@@ -162,7 +157,7 @@ public class IdleFunction extends PamDog {
 		@Override
 		public void mouseClicked(MouseEvent me) {
 			if (me.getButton() == MouseEvent.BUTTON1) {
-				configure();
+				dogControl.configure();
 			}
 		}
 	}
@@ -177,16 +172,10 @@ public class IdleFunction extends PamDog {
 	private class ConfigureDog implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			configure();	
+			dogControl.configure();	
 		}
 	}
 
-	public void configure() {
-		DogParams newParams = DogDialog.showDialog(dogParams, dogControl);
-		if (newParams != null) {
-			setParams(newParams);
-		}
-	}
 	
 	private class PamdogHelp implements ActionListener {
 		@Override
@@ -195,71 +184,6 @@ public class IdleFunction extends PamDog {
 		}
 	}
 	
-	public void setParams(DogParams newParams) {
-		dogParams = newParams;
-		saveConfig();
-	}
-	
-	public void saveConfig() {
-		ObjectOutputStream os;
-		try {
-			os = new ObjectOutputStream(new FileOutputStream(getConfigFile()));
-			os.writeObject(dogParams);
-		} catch (Exception Ex) {
-			System.out.println(Ex);
-			return;
-		}
-		try {
-			os.close();
-		}
-		catch (IOException ex) {
-			ex.printStackTrace();
-		}
-	}
-	
-	private boolean loadConfig() {
-		File conFile = getConfigFile();
-		if (conFile.exists() == false) {
-			System.out.println("No PamDog config file");
-			return false;
-		}
-		ObjectInputStream ois;
-		try {
-			ois = new ObjectInputStream(new FileInputStream(conFile));
-			Object o = ois.readObject();
-			if (o != null && DogParams.class == o.getClass()) {
-				dogParams = (DogParams) o;
-			}
-			ois.close();
-		}
-		catch (IOException ex) {
-			ex.printStackTrace();
-			return false;
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
-	}
-	
-	private File getConfigFile() {
-		String setFileName = getPamguardFolder() + File.separator + "PamDogSettings.pds";
-		return new File(setFileName);
-	}
-	/**
-	 * Get the settings folder name and if necessary, 
-	 * create the folder since it may not exist. 
-	 * @return folder name string, (with no file separator on the end)
-	 */
-	public static String getPamguardFolder() {
-		String settingsFolder = System.getProperty("user.home");
-		settingsFolder += File.separator + "Pamguard";
-		// now check that folder exists
-		File f = new File(settingsFolder);
-		if (f.exists() == false) {
-			f.mkdirs();
-		}
-		return settingsFolder;
-	}
+
 	
 }

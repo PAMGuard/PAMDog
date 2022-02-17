@@ -17,9 +17,8 @@ public class PamDog {
 		    // If Nimbus is not available, you can set the GUI to another look and feel.
 		}
 		
-		IdleFunction idleFunction = new IdleFunction();
-		idleFunction.prepare();
-		idleFunction.run();
+		DogControl dogControl = new DogControl();
+		
 	}
 
 }
