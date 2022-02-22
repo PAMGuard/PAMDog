@@ -119,9 +119,9 @@ public class PamguardPanel implements DogDialogPanel, RootProvider {
 		if (psfFile.exists() == false) {
 			return dogDialog.showWarning("You must specify a valid PAMGuard configuration file");
 		}
-		if (psfxFileCheck(psfFile, workingDirectory.getFile(), pamguardJar.getFile()) == false) {
-			return false;
-		};
+//		if (psfxFileCheck(psfFile, workingDirectory.getFile(), pamguardJar.getFile()) == false) {
+//			return false;
+//		};
 		
 		dogParams.setPsfFile(psfFile.getFile());
 		
@@ -140,35 +140,35 @@ public class PamguardPanel implements DogDialogPanel, RootProvider {
 	}
 	
 
-	private boolean psfxFileCheck(FileDialogPanel psfFile, String workingFolder, String pamguardName) {
-		/*
-		 * psfx files will only work with recent versions of PAMGuard beta....
-		 * So check for Beta in the file path and for 
-		 */
-		if (psfFile == null) return false;
-		if (psfFile.exists() == false) return false;
-		String psfPath = psfFile.getFile();
-		if (psfPath.endsWith(".psf")) return true;
-		if (psfPath.endsWith(".psfx") == false) return false; // this should never happen !!!
-		
-		File pamguardFile = new File(workingFolder, pamguardName);
-		if (pamguardName == null || pamguardFile.exists() == false) {
-			return dogDialog.showWarning("Note that psfx files are only compatible with recent Beta versions of PAMGuard");
-		}
-		String fullPGName = pamguardFile.getAbsolutePath();
-		boolean isBeta = fullPGName.toLowerCase().contains("beta");
-		long fileDate = pamguardFile.lastModified();
-		long firstpsfx = 1535587200000L; // 30 august 2018
-		long lastMod = pamguardFile.lastModified();
-		boolean dateOk =  lastMod >= firstpsfx;
-		if (isBeta && dateOk) {
-			return true;
-		}
-		else {
-			 dogDialog.showWarning("Warning: psfx files are only compatible with recent Beta versions of PAMGuard");
-		}
-		return true;
-	}
+//	private boolean psfxFileCheck(FileDialogPanel psfFile, String workingFolder, String pamguardName) {
+//		/*
+//		 * psfx files will only work with recent versions of PAMGuard beta....
+//		 * So check for Beta in the file path and for 
+//		 */
+//		if (psfFile == null) return false;
+//		if (psfFile.exists() == false) return false;
+//		String psfPath = psfFile.getFile();
+//		if (psfPath.endsWith(".psf")) return true;
+//		if (psfPath.endsWith(".psfx") == false) return false; // this should never happen !!!
+//		
+//		File pamguardFile = new File(workingFolder, pamguardName);
+////		if (pamguardName == null || pamguardFile.exists() == false) {
+////			return dogDialog.showWarning("Note that psfx files are only compatible with recent Beta versions of PAMGuard");
+////		}
+//		String fullPGName = pamguardFile.getAbsolutePath();
+//		boolean isBeta = fullPGName.toLowerCase().contains("beta");
+//		long fileDate = pamguardFile.lastModified();
+//		long firstpsfx = 1535587200000L; // 30 august 2018
+//		long lastMod = pamguardFile.lastModified();
+//		boolean dateOk =  lastMod >= firstpsfx;
+//		if (isBeta && dateOk) {
+//			return true;
+//		}
+//		else {
+//			 dogDialog.showWarning("Warning: psfx files are only compatible with recent Beta versions of PAMGuard");
+//		}
+//		return true;
+//	}
 
 	@Override
 	public String getTitle() {
