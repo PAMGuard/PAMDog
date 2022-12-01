@@ -33,19 +33,27 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	
 	private ConfigSettings configSettings = new ConfigSettings();
 	
+	private boolean runGUI;
+	
 
 	public ConfigSettings getConfigSettings() {
 		return configSettings;
 	}
+	
+	public ConfigSettings getNoGUIConfigSettings() {
+		return null;
+	}
 
-	public DogControl() {
+	public DogControl(boolean runGUI) {
+		this.setRunGUI(runGUI);
 		intialiseSettings();
 		this.idleFunction = new IdleFunction(this);
 		commandLog = new DogLog(this, "Commands", true);
 		dogUDP = idleFunction.getDogUDP();
 		controlStart = System.currentTimeMillis();
-		
-		idleFunction.prepare();
+		if(runGUI) {
+			idleFunction.prepare();
+		}
 		setBroadcast();
 		idleFunction.run();
 	
@@ -655,6 +663,14 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	 */
 	public void restoreJavaDefaults() {
 		configSettings.loadJavaDefaults(dogParams);
+	}
+
+	public boolean isRunGUI() {
+		return runGUI;
+	}
+
+	public void setRunGUI(boolean runGUI) {
+		this.runGUI = runGUI;
 	}
 
 
