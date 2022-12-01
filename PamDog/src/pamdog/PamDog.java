@@ -7,6 +7,8 @@ public class PamDog {
 	public static void main(String[] args) {
 		
 		boolean runGUI = true;
+		String configPath = null;
+		
 		try {
 //		    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 //		        if ("Nimbus".equals(info.getName())) {
@@ -26,6 +28,9 @@ public class PamDog {
 					if(anArg.equals("-nogui")) {
 						runGUI = false;
 					}
+					if(anArg.equals("-configPath")) {
+						configPath = args[iArg++];
+					}
 				}
 			}
 			if(!System.getProperty("os.name").equals("Linux")) {
@@ -35,7 +40,7 @@ public class PamDog {
 		    // If Nimbus is not available, you can set the GUI to another look and feel.
 		}
 		
-		DogControl dogControl = new DogControl(runGUI);
+		DogControl dogControl = new DogControl(runGUI,configPath);
 		
 	}
 

@@ -2,9 +2,11 @@ package pamdog;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingWorker;
@@ -35,17 +37,21 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	
 	private boolean runGUI;
 	
+	private String configPath;
+	
 
 	public ConfigSettings getConfigSettings() {
 		return configSettings;
 	}
 	
-	public ConfigSettings getNoGUIConfigSettings() {
+	/*public ConfigSettings getNoGUIConfigSettings() {
+		
 		return null;
-	}
+	}*/
 
-	public DogControl(boolean runGUI) {
+	public DogControl(boolean runGUI,String configPath) {
 		this.setRunGUI(runGUI);
+		this.configPath = configPath;
 		intialiseSettings();
 		this.idleFunction = new IdleFunction(this);
 		commandLog = new DogLog(this, "Commands", true);
@@ -53,16 +59,79 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		controlStart = System.currentTimeMillis();
 		if(runGUI) {
 			idleFunction.prepare();
+		}else {
+			activateWatchDog(true);
 		}
 		setBroadcast();
 		idleFunction.run();
 	
+	}
+	
+	private void loadNoGUIParams() {
+		
+		String libFolder = null;
+		String psfPath = null;
+		String options = null;
+		int udpPort = 0;
+		int MsMem = 0;
+		int MxMem = 0;
+		
+		try {
+			Scanner scanner = new Scanner(new File(configPath));
+
+			while (scanner.hasNextLine()) {
+				String[] lineParam = scanner.nextLine().split("=");
+				if(lineParam[0].equals("psfPath")) {
+					psfPath = lineParam[1];
+				}else if(lineParam[0].equals("libFolder")) {
+					libFolder = lineParam[1];
+				}else if(lineParam[0].equals("udpPort")) {
+					udpPort = Integer.parseInt(lineParam[1]);
+				}else if(lineParam[0].equals("options")) {
+					options = lineParam[1];
+				}else if(lineParam[0].equals("MsMem")) {
+					MsMem = Integer.valueOf(lineParam[1]);
+				}else if(lineParam[0].equals("MxMem")) {
+					MxMem = Integer.valueOf(lineParam[1]);
+				}
+			}
+
+			scanner.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		if(libFolder==null||psfPath==null||options==null||udpPort==0||MsMem==0||MxMem==0) {
+			System.out.println("Configuration not formatted correctly or missing parameters");
+			System.out.println("Configuration should be in form as following example:");
+			System.out.println("psfPath=C:\\SystemTesting\\Nextimus Load Testing\\ModuleLinearity\\Config\\310.psfx\r\n"
+					+ "libFolder=C:\\Program Files\\Pamguard3\\lib64\r\n"
+					+ "udpPort=8080\r\n"
+					+ "options=-nogui -wavfilefolder C:\\SystemDesign\\Nextimus\\testConf\\recs -binaryfolder C:\\SystemDesign\\Nextimus\\testConf\\bin\r\n"
+					+ "MsMem=512\r\n"
+					+ "MxMem=1084\r\n"
+					+"");
+		}
+		
+		dogParams.setAllowSystemRestarts(true);
+		dogParams.setMinRestartMinutes(20);
+		dogParams.setLibFolder(libFolder);
+		dogParams.setPsfFile(psfPath);
+		dogParams.setUdpPort(udpPort);
+		dogParams.setMsMemory(MsMem);
+		dogParams.setMxMemory(MxMem);
+		dogParams.setOtherOptions(options);
+		dogParams.setJre("java");
+		
 	}
 
 	private void intialiseSettings() {
 		DogParams newParams = getConfigSettings().loadConfig();
 		if (newParams != null) {
 			dogParams = newParams;
+		}
+		if(!runGUI) {
+			loadNoGUIParams();
 		}
 		if (getConfigSettings().checkParams(dogParams)) {
 			// true if anything changed, in which case save the params immediately. 
@@ -219,9 +288,13 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		 String osName = System.getProperty("os.name");        
 		 if (osName.startsWith("Win")) {
 		   shutdownCommand = "shutdown.exe -r -t 5";
-		 } else if (osName.startsWith("Linux") || osName.startsWith("Mac")) {
+		 } else if (osName.startsWith("Mac")) {
 		   shutdownCommand = "reboot -h now";
-		 } else {
+		 } else if (osName.startsWith("Linux")) {
+			 return linuxReboot();
+		 }
+		 
+		 else {
 		   System.err.println("Shutdown unsupported operating system ...");
 		    return false;
 		 }
@@ -237,6 +310,24 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		}
 		 return true;
  }
+	
+	private boolean linuxReboot() {
+		String[] commands = {"sudo reboot"};
+		String[] linuxCommands = new String[commands.length+2];
+		linuxCommands[0] = "/bin/sh";
+		linuxCommands[1] = "-c";
+		for(int i=0;i<commands.length;i++) {
+			linuxCommands[i+2] = commands[i];
+		}
+			
+		try {
+			Runtime.getRuntime().exec(linuxCommands);
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 	/**
 	 * Don't try to start if we've already tried in the last
 	 * minute
@@ -382,7 +473,12 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		dogUDP.setCurrentUdpPort(freePort);
 		String commandLine = idleFunction.createLaunchString(dogParams, freePort);
 		try {
-			process = Runtime.getRuntime().exec(commandLine, null, new File(dogParams.getWorkingFolder()));
+			if(System.getProperty("os.name").startsWith("Linux")) {
+				String[] linuxCommands = {"/bin/sh","-c", commandLine};
+				process = Runtime.getRuntime().exec(linuxCommands, null, new File(dogParams.getWorkingFolder()));
+			}else {
+				process = Runtime.getRuntime().exec(commandLine, null, new File(dogParams.getWorkingFolder()));
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			commandLog.logItem("Launch Failed: " + commandLine);
