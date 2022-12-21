@@ -139,8 +139,10 @@ public class ConfigSettings {
 		DogParams iniParams = findIniSetings();
 		checkWorkingDir(dogParams);
 		checkJava(dogParams);
-		checkJarFile(dogParams, iniParams);
-		checkLibFolder(dogParams, iniParams);
+		if (iniParams != null) {
+			checkJarFile(dogParams, iniParams);
+			checkLibFolder(dogParams, iniParams);
+		}
 		return true;
 	}
 	

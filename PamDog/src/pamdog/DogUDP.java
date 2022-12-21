@@ -14,15 +14,19 @@ public class DogUDP {
 	private InetAddress inetAddr;
 	DatagramSocket socket;
 	private String lastError;
+	private DogControl dogControl;
 	private int currentUdpPort;
 
-	public DogUDP(IdleFunction idleFunction) {
+	public DogUDP(DogControl dogControl, IdleFunction idleFunction) {
 		this.idleFunction = idleFunction;
-		try {
-			inetAddr = InetAddress.getLocalHost();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
+		this.dogControl = dogControl;
+		currentUdpPort = dogControl.getParams().getUdpPort();
+		inetAddr = InetAddress.getLoopbackAddress();
+//		try {
+//			inetAddr = InetAddress.getLocalHost();
+//		} catch (UnknownHostException e) {
+//			e.printStackTrace();
+//		}
 		try {
 			socket = new DatagramSocket();
 		} catch (SocketException e) {
@@ -43,6 +47,7 @@ public class DogUDP {
 		
 		flushSocket(port);
 		
+//		System.out.printf("Send command %s to %s port %d\n", command, inetAddr.toString(), port);
 //		if (curidleFunction.dogParams.getUdpPort();
 		byte[] bytes = command.getBytes();
 		DatagramPacket outPacket = new DatagramPacket(bytes, bytes.length, inetAddr, port);
@@ -64,6 +69,7 @@ public class DogUDP {
 		} catch (IOException e) {
 //			e.printStackTrace();
 			lastError = e.getMessage();
+			System.out.println(lastError + " from command \"" + command + "\"");
 			return null;
 		}
 		String received = new String(inPacket.getData(), 0, inPacket.getLength());
@@ -154,6 +160,6 @@ public class DogUDP {
 
 
 	public void setCurrentUdpPort(int freePort) {
-		currentUdpPort = freePort;
+//		currentUdpPort = freePort;
 	}
 }
