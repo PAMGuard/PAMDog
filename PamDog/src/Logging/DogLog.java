@@ -63,6 +63,11 @@ public class DogLog {
 		}
 	}
 	
+	synchronized public void logItem(String format, Object... objects) {
+		String string = String.format(format, objects);
+		logItem(string);
+	}
+	
 	synchronized public void removeOldItems() {
 		long start = System.currentTimeMillis() - logHistory * 1000;
 		ListIterator<LoggedItem> it = loggedItems.listIterator();
@@ -236,7 +241,7 @@ public class DogLog {
 	 */
 	public void setupBroadcast(int udpPortErrors) {
 		this.broadcastUDP = true;
-		dogUDPErrors = new DogUDP(null);
+		dogUDPErrors = new DogUDP(dogControl, null);
 
 		// find the next open UDP port
 		int freePort = DogUDP.findFreePort(udpPortErrors, udpPortErrors+10);

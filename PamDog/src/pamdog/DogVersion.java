@@ -2,6 +2,6 @@ package pamdog;
 
 public class DogVersion {
 
-	public static final String version = "1.11";
+	public static final String version = "1.12";
 	
 }

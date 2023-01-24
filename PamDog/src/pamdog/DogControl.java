@@ -420,7 +420,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		String statNum = ans.substring(7);
 		try {
 			status = Integer.valueOf(statNum);
-			commandLog.logItem("Status Check returned: " + ans);
+//			commandLog.logItem("Status Check returned: " + ans);
 		}
 		catch (NumberFormatException e) {
 //			publish(new ControlMessage("Unknown Status " + ans));
@@ -470,7 +470,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 			commandLog.logItem("Launch Failed: Unable to find free UDP port for comms");
 			return false;
 		}
-		dogUDP.setCurrentUdpPort(freePort);
+//		dogUDP.setCurrentUdpPort(freePort);
 		String commandLine = idleFunction.createLaunchString(dogParams, freePort);
 		try {
 			if(System.getProperty("os.name").startsWith("Linux")) {
@@ -498,17 +498,33 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		long now = System.currentTimeMillis();
 		boolean isRunning = isRunning();
 		boolean isInitialised = isInitialised();
-		while (isRunning == false && isInitialised == false && System.currentTimeMillis() - now < waitTime) {
+		/*
+		 * First wait for isRunning, 
+		 * then wait for isInitialised. 
+		 */
+		while (isRunning == false || isInitialised == false) {
+			long t = System.currentTimeMillis() - now;
+			if (t > waitTime) {
+				commandLog.logItem("Error starting PAMGuard after %3.1fs: isRunning is %s, Initialised is %s", 
+						(double) t / 1000., Boolean.toString(isRunning), Boolean.toString(isInitialised));
+				break;
+			}
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+//			System.out.println("Waiting for isInitialised()");
 			isRunning = isRunning();
 			isInitialised = isInitialised();
 		}
 		isRunning = isRunning();
 		isInitialised = isInitialised();
+		boolean ok = isRunning & isInitialised;
+		long t = System.currentTimeMillis() - now;
+		commandLog.logItem("PAMGuard launch %s after %3.1fs: isRunning is %s, Initialised is %s", 
+				ok ? "OK" : "Problem", (double) t / 1000., 
+						Boolean.toString(isRunning), Boolean.toString(isInitialised));
 		return isRunning && isInitialised;
 	}
 
@@ -741,6 +757,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	public void setParams(DogParams newParams) {
 		dogParams = newParams;
 		getConfigSettings().saveConfig(dogParams);
+		idleFunction.configure();
 	}
 	
 	public DogParams getParams() {

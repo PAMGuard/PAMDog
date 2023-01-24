@@ -39,7 +39,7 @@ public class IdleFunction extends PamDog {
 
 	public IdleFunction(DogControl dogControl) {
 		this.dogControl = dogControl;
-		dogUDP = new DogUDP(this);
+		dogUDP = new DogUDP(dogControl, this);
 		pamguardLog = new DogLog(dogControl, "Pamguard", true);
 	}
 
@@ -104,6 +104,9 @@ public class IdleFunction extends PamDog {
 		return pop;
 	}
 
+	/**
+	 * Called once at start up to set up the tray icon. 
+	 */
 	public void prepare() {
 		trayIcon = new TrayIcon(PamDogGUI.getIconImageSmall(), "PAMGuard watchdog", getTrayMenu());
 		trayIcon.addMouseListener(new TrayMouse());
@@ -129,6 +132,19 @@ public class IdleFunction extends PamDog {
 	 */
 	public DogUDP getDogUDP() {
 		return dogUDP;
+	}
+
+	/**
+	 * Called at start and whenever the configuration changes - may need to 
+	 */
+	public void configure() {
+		DogParams dogParams = dogControl.getParams();
+		int port = DogUDP.findFreePort(dogParams.getUdpPort(), dogParams.getUdpPort()+10);
+		if (port < 0) {
+			System.out.printf("Unable to find free UDP port on range %d to %d\n",
+					dogParams.getUdpPort(), dogParams.getUdpPort()+10);
+		}
+		dogUDP.setCurrentUdpPort(port);
 	}
 
 	/**
