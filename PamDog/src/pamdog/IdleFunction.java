@@ -47,7 +47,15 @@ public class IdleFunction extends PamDog {
 		/*
 		 * Launch a swing worker thread to do the work. 
 		 */
-		dogControl.execute();
+		if(dogControl.isRunGUI()) {
+			dogControl.execute();
+		}else {
+			try {
+				dogControl.doInBackground();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public String createLaunchString(DogParams params) {

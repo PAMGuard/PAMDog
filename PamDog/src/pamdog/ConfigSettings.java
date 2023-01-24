@@ -348,7 +348,7 @@ public class ConfigSettings {
 		 * the above gets the right folder, but for debugging it's going 
 		 * be be easier to fudge it 
 		 */
-//		currDir = "C:\\Program Files\\Pamguard";
+		//currDir = "C:\\Program Files\\Pamguard3";
 //		JOptionPane.showConfirmDialog(null, "Current dir is " + currDir);
 		return currDir;
 	}
