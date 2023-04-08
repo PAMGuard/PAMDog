@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.SwingWorker;
 
 import pamdog.RestartInfo.RestartType;
+import pamdog.remote.RemoteControlAgent;
 import Logging.DogLog;
 import gui.DogDialog;
 
@@ -33,6 +34,8 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	
 	private ConfigSettings configSettings = new ConfigSettings();
 	
+	private RemoteControlAgent remoteControlAgent;
+	
 
 	public ConfigSettings getConfigSettings() {
 		return configSettings;
@@ -44,6 +47,8 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		commandLog = new DogLog(this, "Commands", true);
 		dogUDP = idleFunction.getDogUDP();
 		controlStart = System.currentTimeMillis();
+		
+		remoteControlAgent = new RemoteControlAgent(this);
 		
 		idleFunction.prepare();
 		idleFunction.configure();
