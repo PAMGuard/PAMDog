@@ -43,6 +43,9 @@ public class DogUDP {
 	 */
 	synchronized public String sendCommand(String command, int timeout) {
 		int port = currentUdpPort;
+		if(currentUdpPort==0) {
+			return null;
+		}
 		
 		flushSocket(port);
 		

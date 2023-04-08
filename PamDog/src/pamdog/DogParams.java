@@ -228,6 +228,9 @@ public class DogParams implements Serializable, Cloneable {
 	}
 	
 	public void addRestart(RestartInfo restartInfo) {
+		if(dogRestarts==null) {
+			dogRestarts = new ArrayList<RestartInfo>();
+		}
 		dogRestarts.add(restartInfo);
 		clearOldRestartInfo();
 	}
