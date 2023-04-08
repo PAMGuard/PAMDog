@@ -135,7 +135,9 @@ public class IdleFunction extends PamDog {
 	}
 
 	/**
-	 * Called at start and whenever the configuration changes - may need to 
+	 * Called at start and whenever the configuration changes
+	 * Finds a free udp port. not sure we've been calling this in recent versions 
+	 * since it continually cranks up the port number. 
 	 */
 	public void configure() {
 		DogParams dogParams = dogControl.getParams();

@@ -64,7 +64,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		remoteControlAgent = new RemoteControlAgent(this);
 		
 		//idleFunction.prepare();
-		//idleFunction.configure();
+//		idleFunction.configure();
 		if(runGUI) {
 			idleFunction.prepare();
 		}else {
