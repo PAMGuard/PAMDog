@@ -73,7 +73,7 @@ public class RemoteMulticastListener {
 		try {
 			mcastaddr = InetAddress.getByName(RemoteControlAgent.defaultAgentAddr);
 			InetSocketAddress group = new InetSocketAddress(mcastaddr, RemoteControlAgent.defaultAgentPort);
-			NetworkInterface netIf = NetworkInterface.getByName("eth9");
+			NetworkInterface netIf = NetworkInterface.getByName("eth8");
 			socket = new MulticastSocket(RemoteControlAgent.defaultAgentPort);
 			socket.joinGroup(group, netIf);
 			socket.setSoTimeout(0);

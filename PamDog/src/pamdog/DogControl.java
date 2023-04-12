@@ -61,7 +61,11 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		dogUDP = idleFunction.getDogUDP();
 		controlStart = System.currentTimeMillis();
 		
-		remoteControlAgent = new RemoteControlAgent(this);
+		/**
+		 * This needs to be turned back on in the remote branch. 
+		 * Leave it off in main until the remote control is ready to go 
+		 */
+//		remoteControlAgent = new RemoteControlAgent(this);
 		
 		//idleFunction.prepare();
 //		idleFunction.configure();
