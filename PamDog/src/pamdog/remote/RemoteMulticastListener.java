@@ -1,5 +1,9 @@
 package pamdog.remote;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -127,11 +131,29 @@ public class RemoteMulticastListener {
 		case "psfxdata":
 			psfxData(datagram);
 			return;
+		case "launchjob":
+			launchBatchJob(datagram);
 		default:
 			System.out.println("Unknown multicast command: " + command);
 		}
 	}
 	
+	/**
+	 * Launch a command. Command format is launchjob,computername,commandparams
+	 * @param datagram
+	 */
+	private void launchBatchJob(DatagramPacket datagram) {
+		ComputerInfo computerInfo = remoteControlAgent.getComputerInfo();
+		byte[] data = Arrays.copyOf(datagram.getData(), datagram.getLength());
+		String command = getStringItem(data, 0);
+		String computer = getStringItem(data, 1);
+		if (computerInfo.getComputerName().equals(computer) ==  false) {
+			return;
+		}
+		String commands = getStringItem(data, 2);
+		
+	}
+
 	private void psfxData(DatagramPacket datagram) {
 		// unpack the psfx data. 
 		ComputerInfo computerInfo = remoteControlAgent.getComputerInfo();
@@ -154,7 +176,7 @@ public class RemoteMulticastListener {
 		}
 		String rxCheck = String.format("%02X", chkSum);
 		if (rxCheck.equalsIgnoreCase(checkSum) == false) {
-			sendReply(datagram, "PSFX Data Checksum error");
+			sendReply(datagram, "PSFX Data Checksum Error");
 		}
 		
 		if (iBit == 1) {
@@ -174,11 +196,28 @@ public class RemoteMulticastListener {
 			psfxBits = null;
 			sendReply(datagram, "PSFXOK");
 		}
+		else {
+			sendReply(datagram, "PSFXBITOK");
+		}
 	}
 
-	private boolean createPSFXFile(ArrayList<byte[]> psfxBits2) {
+	private boolean createPSFXFile(ArrayList<byte[]> psfxBits) {
 		// got the data ok. 
 		// what folder and name are we going to give this thing ? 
+		String folder = remoteControlAgent.psfStorageFolder();
+		String psfName = folder + File.separator + "BatchSettings.psfx";
+		File psxFile = new File(psfName);
+		try {
+			BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(psxFile));
+			for (int i = 0; i < psfxBits.size(); i++) {
+				bos.write(psfxBits.get(i));
+			}
+			bos.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
 		
 		return true;
 	}
