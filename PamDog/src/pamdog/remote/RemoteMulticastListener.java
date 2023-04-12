@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
 
 import pamdog.DogControl;
 
@@ -67,10 +70,26 @@ public class RemoteMulticastListener {
 
 		InetAddress mcastaddr;
 		try {
+			Enumeration<NetworkInterface> addresses = NetworkInterface.getNetworkInterfaces();
+			while (addresses.hasMoreElements()) {
+				NetworkInterface nif = addresses.nextElement();
+				System.out.printf(nif.getName());
+				Enumeration<InetAddress> addrs = nif.getInetAddresses();
+				while (addrs.hasMoreElements()) {
+					InetAddress addr = addrs.nextElement();
+					System.out.printf(", addr %s:%s", addr.getHostName(), addr.getHostAddress());
+				}
+				System.out.printf("\n");
+			}
+			
 			mcastaddr = InetAddress.getByName(RemoteControlAgent.defaultAgentAddr);
 			InetSocketAddress group = new InetSocketAddress(mcastaddr, RemoteControlAgent.defaultAgentPort);
-			NetworkInterface netIf = NetworkInterface.getByName("bge0");
+			NetworkInterface netIf = NetworkInterface.getByName("eth3");
 			socket = new MulticastSocket(RemoteControlAgent.defaultAgentPort);
+			
+			boolean supportsMulti = netIf.supportsMulticast();
+			
+			
 			socket.joinGroup(group, netIf);
 			socket.setSoTimeout(0);
 		} catch (IOException e) {
@@ -94,7 +113,7 @@ public class RemoteMulticastListener {
 	}
 
 	private void processDatagram(DatagramPacket datagram) {
-//		String message = new String(datagram.getData(), 0, datagram.getLength());
+		String message = new String(datagram.getData(), 0, datagram.getLength());
 //		System.out.println("Dog Agent Message received " + message);
 //		if (message == null) {
 //			return;
@@ -211,7 +230,7 @@ public class RemoteMulticastListener {
 		ComputerInfo computerInfo = remoteControlAgent.getComputerInfo();
 		
 		String replyStr = String.format("helloback,%s,%s,%s,%d", computerInfo.getComputerName(), computerInfo.getOsName(), computerInfo.getOsArch(), computerInfo.getnProcessors());
-//		System.out.println("Dog reply:" + replyStr);
+		System.out.println("Dog reply:" + replyStr);
 		sendReply(datagram, replyStr);
 	}
 
