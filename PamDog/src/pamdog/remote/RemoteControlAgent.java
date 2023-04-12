@@ -1,5 +1,7 @@
 package pamdog.remote;
 
+import java.io.File;
+
 import pamdog.DogControl;
 
 /**
@@ -38,6 +40,21 @@ public class RemoteControlAgent {
 	 */
 	public ComputerInfo getComputerInfo() {
 		return computerInfo;
+	}
+	
+	/**
+	 * Get somewhere to store a pssf file that's being transferred from 
+	 * the batch controller. This can be the pamguard home folder for now. 
+	 * @return uer.home\Pamguard
+	 */
+	public String psfStorageFolder() {
+		String settingsFolder = System.getProperty("user.home");
+		settingsFolder += File.separator + "Pamguard";
+		File sf = new File(settingsFolder);
+		if (sf.exists() == false) {
+			sf.mkdirs();
+		}
+		return settingsFolder;
 	}
 	
 }
