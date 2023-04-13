@@ -65,7 +65,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		 * This needs to be turned back on in the remote branch. 
 		 * Leave it off in main until the remote control is ready to go 
 		 */
-//		remoteControlAgent = new RemoteControlAgent(this);
+		remoteControlAgent = new RemoteControlAgent(this);
 		
 		//idleFunction.prepare();
 //		idleFunction.configure();
@@ -797,6 +797,13 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 
 	public void setRunGUI(boolean runGUI) {
 		this.runGUI = runGUI;
+	}
+
+	/**
+	 * @return the remoteControlAgent
+	 */
+	public RemoteControlAgent getRemoteControlAgent() {
+		return remoteControlAgent;
 	}
 
 

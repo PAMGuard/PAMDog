@@ -56,5 +56,12 @@ public class RemoteControlAgent {
 		}
 		return settingsFolder;
 	}
+
+	/**
+	 * Called when anything for the remote interface is changed. 
+	 */
+	public void restartRemoteInterface() {
+		remoteListener.restart();
+	}
 	
 }

@@ -71,6 +71,7 @@ public class DogDialog extends JDialog {
 		addPanel(new ControlPanel(this));
 		addPanel(new PamguardPanel(this));
 		addPanel(new JavaPanel(this));
+		addPanel(new RemotePanel(dogControl, this));
 		dPanel.add(BorderLayout.CENTER, mainPanel);
 		
 		

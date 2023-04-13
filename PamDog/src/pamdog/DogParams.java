@@ -46,6 +46,11 @@ public class DogParams implements Serializable, Cloneable {
 	 * max number of all types of restart to be stored.
 	 */
 	private ArrayList<RestartInfo> dogRestarts;
+
+	/**
+	 * Network interface name for remote control
+	 */
+	public String netInterfaceName;
 	static final int maxRunRestarts = 20;
 	static final int maxPamguardRestarts = 20;
 	static final int maxPCRestarts = 20;

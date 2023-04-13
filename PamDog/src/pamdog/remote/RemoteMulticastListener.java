@@ -56,8 +56,17 @@ public class RemoteMulticastListener {
 	}
 
 	private void stopListening() {
-		// TODO Auto-generated method stub
-		
+		keepListening = false;
+		if (socket != null) {
+			socket.close();
+		}
+		if (listenerThread != null) {
+			try {
+				listenerThread.join();
+			} catch (InterruptedException e) {
+				System.out.println("PAMDog multicast listener thread has been stopped");
+			}
+		}
 	}
 
 	private class Listener implements Runnable {
@@ -90,20 +99,24 @@ public class RemoteMulticastListener {
 			InetSocketAddress group = new InetSocketAddress(mcastaddr, RemoteControlAgent.defaultAgentPort);
 			
 			// value for Douglas laptop
-			NetworkInterface netIf = NetworkInterface.getByName("eth8");
+			String intfName = dogControl.getParams().netInterfaceName;
+			NetworkInterface netIf = null;
+			if (intfName != null) {
+				netIf = NetworkInterface.getByName(intfName);
+			}
 			// value for Dougs desktop
 			//NetworkInterface netIf = NetworkInterface.getByName("eth3");
 
 			socket = new MulticastSocket(RemoteControlAgent.defaultAgentPort);
 			
-			boolean supportsMulti = netIf.supportsMulticast();
+//			boolean supportsMulti = netIf.supportsMulticast();
 			
 			
 			socket.joinGroup(group, netIf);
 			socket.setSoTimeout(0);
 		} catch (IOException e) {
-			e.printStackTrace();
-			return;
+			System.out.println("Multicast recevier error: " + e.getMessage());
+//			return;
 		}
 
 		System.out.printf("Waiting for multicast messages at %s port %d\n", RemoteControlAgent.defaultAgentAddr, RemoteControlAgent.defaultAgentPort);
@@ -289,5 +302,13 @@ public class RemoteMulticastListener {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Should get called whenever the remote interface is changed in the GUI
+	 */
+	public void restart() {
+		stopListening();
+		startListening();
 	}
 }
