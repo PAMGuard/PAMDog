@@ -1,5 +1,7 @@
 package pamdog;
 
+import java.awt.SystemTray;
+
 import javax.swing.UIManager;
 
 public class PamDog {
@@ -34,13 +36,14 @@ public class PamDog {
 				}
 			}
 			if(!System.getProperty("os.name").equals("Linux")) {
-				
+
 			}
 		} catch (Exception e) {
 		    // If Nimbus is not available, you can set the GUI to another look and feel.
 		}
 		
 		DogControl dogControl = new DogControl(runGUI,configPath);
+		//dogControl.configure();
 		
 	}
 

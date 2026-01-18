@@ -67,9 +67,16 @@ public class IdleFunction extends PamDog {
 	 * @return command line. 
 	 */
 	public String createLaunchString(DogParams params, int port) {
-		// seem unable to wrap lib path in "" - worrying for default location of files. 
-		String commandLine = String.format("\"%s\" -Dname=AutoPamguard -Xms%dm -Xmx%dm -Djava.library.path=%s %s -jar \"%s\"", 
-				params.getJre(),
+		// If JRE path is empty, fall back to the system 'java' on PATH.
+		String jre = params.getJre();
+		if (jre == null || jre.trim().isEmpty()) {
+			jre = "java";
+		}
+		// do not wrap the jre in quotes; wrapping it as "" when empty caused
+		// the shell to try to execute an empty command which yields
+		// "/bin/sh: 1: : Permission denied" on some systems.
+		String commandLine = String.format("%s -Dname=AutoPamguard -Xms%dm -Xmx%dm -Djava.library.path=%s %s -jar \"%s\"", 
+				jre,
 				params.getMsMemory(), params.getMxMemory(), 
 				params.getLibFolder(), params.getOtherVMOptions(), params.getJavaFile());
 		String psf = params.getPsfFile();
@@ -85,6 +92,54 @@ public class IdleFunction extends PamDog {
 		}
 		return commandLine;
 	}
+
+//	/**
+//	 * Create a command-argument array to launch PAMGuard without invoking a shell.
+//	 * This avoids quoting issues and shell injection, and works on Linux and Windows.
+//	 */
+//	public String[] createLaunchArgs(DogParams params, int port) {
+//		java.util.List<String> args = new java.util.ArrayList<>();
+//		// JRE
+//		String jre = params.getJre();
+//		if (jre == null || jre.trim().isEmpty()) {
+//			jre = "java";
+//		}
+//		args.add(jre);
+//		// VM properties and memory
+//		args.add("-Dname=AutoPamguard");
+//		args.add(String.format("-Xms%dm", params.getMsMemory()));
+//		args.add(String.format("-Xmx%dm", params.getMxMemory()));
+//		args.add(String.format("-Djava.library.path=%s", params.getLibFolder()));
+//		// other VM options: split on whitespace but keep it simple
+//		String vmOpts = params.getOtherVMOptions();
+//		if (vmOpts != null && !vmOpts.trim().isEmpty()) {
+//			for (String s: vmOpts.trim().split("\\s+")) {
+//				if (!s.isEmpty()) args.add(s);
+//			}
+//		}
+//		// -jar <jarfile>
+//		args.add("-jar");
+//		args.add(params.getJavaFile());
+//		// psf file
+//		String psf = params.getPsfFile();
+//		if (psf != null && !psf.trim().isEmpty()) {
+//			args.add("-psf");
+//			args.add(psf);
+//		}
+//		// port
+//		if (port > 0) {
+//			args.add("-port");
+//			args.add(Integer.toString(port));
+//		}
+//		// other options
+//		String opt = params.getOtherOptions();
+//		if (opt != null && !opt.trim().isEmpty()) {
+//			for (String s: opt.trim().split("\\s+")) {
+//				if (!s.isEmpty()) args.add(s);
+//			}
+//		}
+//		return args.toArray(new String[0]);
+//	}
 
 	/**
 	 * Create the popup menu for the tray
@@ -108,6 +163,10 @@ public class IdleFunction extends PamDog {
 	 * Called once at start up to set up the tray icon. 
 	 */
 	public void prepare() {
+		if (SystemTray.isSupported() == false) {
+			System.out.println("System tray not supported!");
+			return;
+		}
 		trayIcon = new TrayIcon(PamDogGUI.getIconImageSmall(), "PAMGuard watchdog", getTrayMenu());
 		trayIcon.addMouseListener(new TrayMouse());
 		trayIcon.addActionListener(new ConfigureDog());
@@ -123,7 +182,9 @@ public class IdleFunction extends PamDog {
 	 * happen anyway, but this makes it happen quicker. 
 	 */
 	public void destroy() {
-		SystemTray.getSystemTray().remove(trayIcon);
+		if (SystemTray.isSupported()) {
+			SystemTray.getSystemTray().remove(trayIcon);
+		}
 		pamguardLog.closeFile();
 	}
 

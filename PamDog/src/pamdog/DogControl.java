@@ -51,6 +51,35 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		
 		return null;
 	}*/
+	
+	
+	public DogControl(boolean runGUI, DogParams params) {
+		this.setRunGUI(runGUI);
+		this.dogParams = params;
+		this.idleFunction = new IdleFunction(this);
+		commandLog = new DogLog(this, "Commands", true);
+		dogUDP = idleFunction.getDogUDP();
+		controlStart = System.currentTimeMillis();
+		
+		/**
+		 * This needs to be turned back on in the remote branch. 
+		 * Leave it off in main until the remote control is ready to go 
+		 */
+//		remoteControlAgent = new RemoteControlAgent(this);
+		
+		//idleFunction.prepare();
+//		idleFunction.configure();
+		if(runGUI) {
+			idleFunction.prepare();
+		}else {
+			activateWatchDog(true);
+		}
+
+		setBroadcast();
+		idleFunction.run();
+	
+	}
+	
 
 	public DogControl(boolean runGUI,String configPath) {
 		this.setRunGUI(runGUI);
@@ -77,8 +106,9 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 
 		setBroadcast();
 		idleFunction.run();
-	
 	}
+
+ 
 	
 	private void loadNoGUIParams() {
 		
@@ -488,7 +518,9 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		try {
 			if(System.getProperty("os.name").startsWith("Linux")) {
 				String[] linuxCommands = {"/bin/sh","-c", commandLine};
+				System.out.println("Launching Pamguard with command:" + commandLine);
 				process = Runtime.getRuntime().exec(linuxCommands, null, new File(dogParams.getWorkingFolder()));
+				System.out.println("Done:" + commandLine);
 			}else {
 				process = Runtime.getRuntime().exec(commandLine, null, new File(dogParams.getWorkingFolder()));
 			}
@@ -508,6 +540,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		}
 		commandLog.logItem("Launch Ok: " + commandLine);
 		commandLog.logItem("Process Name: " + process.toString());
+		
 		long now = System.currentTimeMillis();
 		boolean isRunning = isRunning();
 		boolean isInitialised = isInitialised();
@@ -516,6 +549,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		 * then wait for isInitialised. 
 		 */
 		while (isRunning == false || isInitialised == false) {
+
 			long t = System.currentTimeMillis() - now;
 			if (t > waitTime) {
 				commandLog.logItem("Error starting PAMGuard after %3.1fs: isRunning is %s, Initialised is %s", 
@@ -527,9 +561,11 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-//			System.out.println("Waiting for isInitialised()");
 			isRunning = isRunning();
 			isInitialised = isInitialised();
+			
+			System.out.println("Waiting for isInitialised(): " + isInitialised + "  " +isRunning);
+
 		}
 		isRunning = isRunning();
 		isInitialised = isInitialised();
