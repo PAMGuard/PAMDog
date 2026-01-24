@@ -16,9 +16,9 @@ public class PamDogPi {
 		
 		DogParams dogParams = new DogParams();
 		
-		String osName = System.getProperty("os.name").toLowerCase();
+		//String osName = System.getProperty("os.name").toLowerCase();
 		
-		String pamguardJar = "/home/jdjm/Desktop/pamguard_pi5/Pamguard-2.02.17ffa.jar";
+		String pamguardJar = "/home/jdjm/Desktop/pamguard_pi5/Pamguard-2.02.17ffc.jar";
 		String panguardPSFX = "/home/jdjm/Desktop/pamguard_pi5/pamguard_pi5.psfx";
 		String pamguardlib = "/home/jdjm/Desktop/pamguard_pi5/liblinux";
 

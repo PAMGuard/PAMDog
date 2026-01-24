@@ -235,6 +235,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 			wasRunning = true;
 
 			int status = getStatus();
+			System.out.println("DogControl: PAMGuard status = " + status);
 			switch (status) {
 			case UdpCommands.PAM_IDLE:
 				if (shouldStart()) {
