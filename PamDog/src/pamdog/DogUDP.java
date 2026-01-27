@@ -34,14 +34,25 @@ public class DogUDP {
 
 	}
 
+	/**
+	 * Send a command to PAMGuard. Note the maximum returned message length is 128 bytes.
+	 * @param command - the command string
+	 * @param timeout - time to wait for a response
+	 * @return the returned string, or null if there was an error
+	 */
+	synchronized public String sendCommand(String command, int timeout) {
+		return sendCommand( command,  timeout,  128) ;
+	}
+
 
 	/**
 	 * Send a command to PAMGuard. 
-	 * @param command
-	 * @param timeout
-	 * @return
+	 * @param command - the command string
+	 * @param timeout - time to wait for a response
+	 * @param maxMessageLength - maximum length of the returned message in bytes
+	 * @return the returned string, or null if there was an error
 	 */
-	synchronized public String sendCommand(String command, int timeout) {
+	synchronized public String sendCommand(String command, int timeout, int maxMessageLength) {
 		int port = currentUdpPort;
 		if(currentUdpPort==0) {
 			return null;
@@ -63,7 +74,7 @@ public class DogUDP {
 		/*
 		 * Now read back from the server. 
 		 */
-		byte[] returnBytes = new byte[128];
+		byte[] returnBytes = new byte[maxMessageLength];
 		DatagramPacket inPacket = new DatagramPacket(returnBytes, returnBytes.length);
 		try {
 			socket.setSoTimeout(timeout);

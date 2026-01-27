@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +15,9 @@ import javax.swing.SwingWorker;
 import pamdog.RestartInfo.RestartType;
 import pamdog.remote.RemoteControlAgent;
 import Logging.DogLog;
+import command.DogCommandAdapter;
+import command.DogCommandManager;
+import command.TerminalCommands;
 import gui.DogDialog;
 
 public class DogControl extends SwingWorker<Integer, ControlMessage> {
@@ -41,6 +45,13 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	private boolean runGUI;
 	
 	private String configPath;
+
+	/**
+	 * Handles sending external commands to PAMGuard via command adapter
+	 * interfaces - e.g. terminal, BlueTooth etc. 
+	 */
+	private DogCommandManager dogCommaandManager;
+	
 	
 
 	public ConfigSettings getConfigSettings() {
@@ -59,8 +70,8 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		this.idleFunction = new IdleFunction(this);
 		commandLog = new DogLog(this, "Commands", true);
 		dogUDP = idleFunction.getDogUDP();
+		dogCommaandManager = new DogCommandManager(this);
 		controlStart = System.currentTimeMillis();
-		
 		/**
 		 * This needs to be turned back on in the remote branch. 
 		 * Leave it off in main until the remote control is ready to go 
@@ -88,6 +99,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		this.idleFunction = new IdleFunction(this);
 		commandLog = new DogLog(this, "Commands", true);
 		dogUDP = idleFunction.getDogUDP();
+		dogCommaandManager = new DogCommandManager(this);
 		controlStart = System.currentTimeMillis();
 		
 		/**
@@ -107,7 +119,8 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		setBroadcast();
 		idleFunction.run();
 	}
-
+	
+	
  
 	
 	private void loadNoGUIParams() {
@@ -195,6 +208,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		}
 	}
 
+	
 	@Override
 	protected Integer doInBackground() throws Exception {
 		
@@ -235,7 +249,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 			wasRunning = true;
 
 			int status = getStatus();
-			System.out.println("DogControl: PAMGuard status = " + status);
+			//System.out.println("DogControl: PAMGuard status = " + status);
 			switch (status) {
 			case UdpCommands.PAM_IDLE:
 				if (shouldStart()) {
@@ -656,6 +670,17 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 			commandLog.logItem("Start Failed status " + curState);
 			return false;
 		}
+	}
+	
+	/**
+	 * Send a generic command to PAMGuard and return the response
+	 * @param command - the command to send	
+	 * @param waitTime - the time to wait for a response in milliseconds
+	 * @return the ControlMessage containing the response
+	 */
+	public ControlMessage sendPamguardCommand(String command, int waitTime) {
+		String ans = dogUDP.sendCommand(command, waitTime, 2048);
+		return new ControlMessage(ans);
 	}
 	
 	/**

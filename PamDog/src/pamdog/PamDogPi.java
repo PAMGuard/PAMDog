@@ -27,6 +27,9 @@ public class PamDogPi {
 		dogParams.setJavaFile(pamguardJar);
 		dogParams.setLibFolder(pamguardlib);
 		dogParams.setWorkingFolder("/home/jdjm/Desktop/pamguard_pi5");
+		
+		
+		dogParams.setStartWait(60); // wait up to 60 seconds for pamguard to start.
 
 		
 		DogControl dogControl = new DogControl(runGUI,dogParams);
