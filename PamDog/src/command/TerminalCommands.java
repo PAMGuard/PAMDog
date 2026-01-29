@@ -19,8 +19,8 @@ public class TerminalCommands extends DogCommandAdapter {
 	
 	private BufferedReader reader;
 	
-	public TerminalCommands(DogControl dogControl, DogCommandManager dogCommandManager) {
-		super(dogControl);
+	public TerminalCommands(DogCommandManager dogCommandManager) {
+		super(dogCommandManager);
 		// TODO Auto-generated constructor stub
 		getTerminalCommands();
 	}

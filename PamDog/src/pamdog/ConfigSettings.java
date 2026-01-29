@@ -82,9 +82,17 @@ public class ConfigSettings {
 	 * Standard config file path
 	 * @return
 	 */
-	private File getConfigFile() {
-		String setFileName = getPamguardFolder() + File.separator + "PamDogSettings.pds";
+	protected File getConfigFile() {
+		String setFileName = getPamguardFolder() + File.separator + getSettingsFileName();
 		return new File(setFileName);
+	}
+	
+	/**
+	 * Get the default settings file name
+	 * @return settings file name string
+	 */
+	protected String getSettingsFileName() {
+		return "PamDogSettings.pds";
 	}
 	/**
 	 * Get the settings folder name and if necessary, 

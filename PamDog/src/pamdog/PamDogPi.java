@@ -27,20 +27,20 @@ public class PamDogPi {
 		dogParams.setJavaFile(pamguardJar);
 		dogParams.setLibFolder(pamguardlib);
 		dogParams.setWorkingFolder("/home/jdjm/Desktop/pamguard_pi5");
+	
+		dogParams.setDeploy(true);
+		dogParams.setStartWait(20); // wait up to 60 seconds for pamguard to start.
 		
+	
+		DogControl dogControl = new DogControl(runGUI,dogParams, false);
 		
-		dogParams.setStartWait(60); // wait up to 60 seconds for pamguard to start.
-
-		
-		DogControl dogControl = new DogControl(runGUI,dogParams);
+		System.out.println("Loaded PamDog parameters");
+		dogControl.getConfigSettings().saveConfig(dogControl.getParams());
 		
 		dogControl.activateWatchDog(runGUI); 
 		//dogControl.configure();
 		
 		System.out.println("Ending PamDog for Raspberry Pi");
-
-		
-		
 	}
 
 }

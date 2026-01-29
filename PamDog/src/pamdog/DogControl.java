@@ -38,7 +38,11 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 
 	private long controlStart;
 	
-	private ConfigSettings configSettings = new ConfigSettings();
+	
+	/**
+	 * Configuration settings handler
+	 */
+	private ConfigSettings configSettings = new ConfigJSONSettings();
 	
 	private RemoteControlAgent remoteControlAgent;
 
@@ -64,7 +68,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	}*/
 	
 	
-	public DogControl(boolean runGUI, DogParams params) {
+	public DogControl(boolean runGUI, DogParams params, boolean activateWachDog) {
 		this.setRunGUI(runGUI);
 		this.dogParams = params;
 		this.idleFunction = new IdleFunction(this);
@@ -83,16 +87,20 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		if(runGUI) {
 			idleFunction.prepare();
 		}else {
-			activateWatchDog(true);
+			activateWatchDog(activateWachDog);
 		}
 
 		setBroadcast();
 		idleFunction.run();
+	}
+
 	
+	public DogControl(boolean runGUI, DogParams params) {
+		this(runGUI, params, true);
 	}
 	
 
-	public DogControl(boolean runGUI,String configPath) {
+	public DogControl(boolean runGUI, String configPath) {
 		this.setRunGUI(runGUI);
 		this.configPath = configPath;
 		intialiseSettings();
@@ -403,8 +411,15 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	 * @return
 	 */
 	private boolean shouldStart() {
-		int nStarts = commandLog.countLogsStarting("Start", 10);
-		return nStarts == 0;
+		if (dogParams.isDeploy()) {
+			//if the deploy flag is set, then we should start PAMGuard
+			int nStarts = commandLog.countLogsStarting("Start", 10);
+			return nStarts == 0;
+		}
+		else {
+			//if the deploy flag is not se then do not start PAMGuard
+			return false;
+		}
 	}
 	
 	/**

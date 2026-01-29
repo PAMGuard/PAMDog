@@ -2,6 +2,7 @@ package command;
 
 import pamdog.ControlMessage;
 import pamdog.DogControl;
+import pamdog.UdpCommands;
 
 /**
  *
@@ -19,10 +20,10 @@ public abstract class DogCommandAdapter {
 	
 	public ControlMessage lastSentMessage = null;
 	
-	private DogControl dogControl;
+	private DogCommandManager dogCommandManager;
 
-	public DogCommandAdapter(DogControl dogControl) {
-		this.dogControl = dogControl;
+	public DogCommandAdapter(DogCommandManager dogCommandManager) {
+		this.dogCommandManager = dogCommandManager;
 	}
 	
 	/**
@@ -46,17 +47,10 @@ public abstract class DogCommandAdapter {
 	 * the program (in which case this thread will
 	 * exit and close the port). True otherwise. 
 	 */
-	public boolean interpretCommand(ControlMessage commandString) {
-		//need t create a function in dogControl which allows for any command to be sent. 
+	public boolean interpretCommand(ControlMessage commandMessage) {
+		ControlMessage reply = dogCommandManager.interpretCommand(commandMessage);
 		
-		//Then we record these commands so that we always know what has been sent - probably just do this via a 
-		//text log That way we know if we have deployed the device .i.e. that it should be running or whether the device should 
-		//not start
-		
-		
-		ControlMessage controlMessage = dogControl.sendPamguardCommand(commandString.getCommand(), 1000);
-		
-		sendData(controlMessage);
+		sendData(reply);
 		
 		return true; 
 	 }

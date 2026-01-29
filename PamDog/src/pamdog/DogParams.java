@@ -51,6 +51,20 @@ public class DogParams implements Serializable, Cloneable {
 	static final int maxPCRestarts = 20;
 	
 	
+	//deployment info
+	
+	/**
+	 * If true, PamDog will automatically start PAMGuard running. 
+	 */
+	private boolean deploy = true;
+	
+
+	/**
+	 * If set other than null then PAMGuard is started but only set running after the 
+	 * given date/time 
+	 */
+	private Long deployDate = null;
+	
 	
 	public DogParams() {
 		super();
@@ -88,7 +102,7 @@ public class DogParams implements Serializable, Cloneable {
 	}
 	/**
 	 * @param libFolder the libFolder to set
-	 */
+	 * */
 	public void setLibFolder(String libFolder) {
 		this.libFolder = libFolder;
 	}
@@ -329,6 +343,65 @@ public class DogParams implements Serializable, Cloneable {
 	 */
 	public void setLastRestartTime(long lastRestartTime) {
 		this.lastRestartTime = lastRestartTime;
+	}
+	
+	/**
+	 * Check if deployment is enabled, If so PamGuard will be started automatically.
+	 * @return true if deployment is enabled.
+	 */
+	public boolean isDeploy() {
+		return deploy;
+	}
+
+	
+	/**
+	 * Set deploy to enabled or disabled. If set to true PamGuard will be started automatically.
+	 * @param deploy - true to enable deployment.
+	 */
+	public void setDeploy(boolean deploy) {
+		this.deploy = deploy;
+	}
+
+	/**
+	 * Get the deployment date. If set, PamGuard will be started but only set running after the
+	 * given date/time.
+	 * @return the deployDate in milliseconds since 1970, or null if not set.
+	 */
+	public Long getDeployDate() {
+		return deployDate;
+	}
+
+	
+	/**
+	 * Set the deployment date. If set, PamGuard will be started but only set running after the
+	 * given date/time. If set to null, PamGuard will be started immediately on deployment.
+	 * @param deployDate - the deployDate in milliseconds since 1970, or null to not set.
+	 */
+	public void setDeployDate(Long deployDate) {
+		this.deployDate = deployDate;
+	}
+
+	/**
+	 * Public getter for the list of RestartInfo entries. Returns an empty list if none were set.
+	 * This is used by JSON serialization/deserialization.
+	 * @return ArrayList&lt;RestartInfo&gt;
+	 */
+	public ArrayList<RestartInfo> getDogRestarts() {
+		if (dogRestarts == null) {
+			dogRestarts = new ArrayList<>();
+		}
+		return dogRestarts;
+	}
+
+	/**
+	 * Set the restart info list. Will replace any existing list.
+	 * After setting we enforce the max-size trimming.
+	 * @param restarts the list of RestartInfo
+	 */
+	public void setDogRestarts(ArrayList<RestartInfo> restarts) {
+		this.dogRestarts = restarts;
+		if (this.dogRestarts == null) this.dogRestarts = new ArrayList<>();
+		clearOldRestartInfo();
 	}
 
 
