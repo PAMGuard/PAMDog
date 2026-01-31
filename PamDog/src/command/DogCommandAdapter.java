@@ -20,7 +20,7 @@ public abstract class DogCommandAdapter {
 	
 	public ControlMessage lastSentMessage = null;
 	
-	private DogCommandManager dogCommandManager;
+	protected DogCommandManager dogCommandManager;
 
 	public DogCommandAdapter(DogCommandManager dogCommandManager) {
 		this.dogCommandManager = dogCommandManager;

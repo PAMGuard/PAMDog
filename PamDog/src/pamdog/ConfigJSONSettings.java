@@ -90,6 +90,8 @@ public class ConfigJSONSettings extends ConfigSettings {
 	 * @throws IOException
 	 */
 	public static void writeDogParams(File file, DogParams params) throws IOException {
+		
+		System.out.println("Writing DogParams to JSON file: " + file.getAbsolutePath());
 		if (params == null) throw new IllegalArgumentException("params cannot be null");
 		JSONObject jo = new JSONObject();
 		jo.put("activeDog", params.isActiveDog());

@@ -32,7 +32,7 @@ public class PamDogPi {
 		dogParams.setStartWait(20); // wait up to 60 seconds for pamguard to start.
 		
 	
-		DogControl dogControl = new DogControl(runGUI,dogParams, false);
+		DogControl dogControl = new DogControl(runGUI,dogParams, true);
 		
 		System.out.println("Loaded PamDog parameters");
 		dogControl.getConfigSettings().saveConfig(dogControl.getParams());

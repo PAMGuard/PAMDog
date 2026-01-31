@@ -35,6 +35,7 @@ public class DogCommandManager {
 		
 		/***Add any new command managers here****/
 		commandManagers.add(new TerminalCommands(this));
+		commandManagers.add(new BluetoothCommands(this));
 	}
 	
 	

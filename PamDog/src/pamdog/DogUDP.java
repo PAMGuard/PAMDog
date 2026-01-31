@@ -60,7 +60,7 @@ public class DogUDP {
 		
 		flushSocket(port);
 		
-//		System.out.printf("Send command %s to %s port %d\n", command, inetAddr.toString(), port);
+//		System.out.printf("DogUDP: Send command %s to %s port %d\n", command, inetAddr.toString(), port);
 //		if (curidleFunction.dogParams.getUdpPort();
 		byte[] bytes = command.getBytes();
 		DatagramPacket outPacket = new DatagramPacket(bytes, bytes.length, inetAddr, port);

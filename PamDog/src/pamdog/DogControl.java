@@ -695,6 +695,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	 */
 	public ControlMessage sendPamguardCommand(String command, int waitTime) {
 		String ans = dogUDP.sendCommand(command, waitTime, 2048);
+		System.out.println("Sent command " + command + " got response " + ans);
 		return new ControlMessage(ans);
 	}
 	
