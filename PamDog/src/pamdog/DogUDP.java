@@ -33,6 +33,17 @@ public class DogUDP {
 		}
 
 	}
+	
+	
+	/**
+	 * Send a command to PAMGuard. Note the maximum returned message length is 128 bytes.
+	 * @param command - the command Enum
+	 * @param timeout - time to wait for a response
+	 * @return the returned string, or null if there was an error
+	 */
+	synchronized public String sendCommand(UdpCommands command, int timeout) {
+		return sendCommand( command.toString(),  timeout,  128) ;
+	}
 
 	/**
 	 * Send a command to PAMGuard. Note the maximum returned message length is 128 bytes.

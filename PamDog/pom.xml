@@ -37,7 +37,8 @@
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
-										<Multi-Release>false</Multi-Release>
+										<Main-Class>pamdog.PamDogPi</Main-Class>
+										<Class-Path>.</Class-Path> <!--  this is from the orig ant build file -->
 									</manifestEntries>
 								</transformer>
 							</transformers>

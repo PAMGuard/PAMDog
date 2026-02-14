@@ -21,6 +21,8 @@ import pamdog.RestartInfo.RestartType;
  */
 public class ConfigJSONSettings extends ConfigSettings {
 	
+
+
 	public ConfigJSONSettings( ) {
 		System.out.println("Using JSON Config Settings");
 	}
@@ -111,6 +113,7 @@ public class ConfigJSONSettings extends ConfigSettings {
 		jo.put("allowSystemRestarts", params.isAllowSystemRestarts());
 		jo.put("minRestartMinutes", params.getMinRestartMinutes());
 		jo.put("lastRestartTime", params.getLastRestartTime());
+		System.out.print("----Deploy flag:----" + params.isDeploy());	
 		jo.put("deploy", params.isDeploy());
 		if (params.getDeployDate() != null) jo.put("deployDate", params.getDeployDate());
 		else jo.put("deployDate", JSONObject.NULL);

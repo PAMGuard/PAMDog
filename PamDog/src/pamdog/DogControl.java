@@ -454,19 +454,19 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 	 */
 	
 	public boolean isRunning(int pingTimeout) {
-		String ans = dogUDP.sendCommand(UdpCommands.PING, pingTimeout);
+		String ans = dogUDP.sendCommand(UdpCommands.PING.toString(), pingTimeout);
 		if (ans == null) {
 //			publish(new ControlMessage("Ping Error from isRunning(): " + dogUDP.getLastError()));
 			commandLog.logItem("Ping Error from isRunning(): " + dogUDP.getLastError());
 		}
-		if (ans!=null && !ans.equals(UdpCommands.PING)) {
+		if (ans!=null && !ans.equals(UdpCommands.PING.toString())) {
 //			publish(new ControlMessage("False response from Ping; getting " + ans + " instead"));
 			commandLog.logItem("False response from Ping; getting " + ans + " instead");
 		}
-		if (!(ans != null && ans.equals(UdpCommands.PING))) {
+		if (!(ans != null && ans.equals(UdpCommands.PING.toString()))) {
 			commandLog.logItem("Just failed isRunning check, ans = " + ans);
 		}
-		return (ans != null && ans.equals(UdpCommands.PING));
+		return (ans != null && ans.equals(UdpCommands.PING.toString()));
 	}
 	
 	/**
@@ -483,7 +483,7 @@ public class DogControl extends SwingWorker<Integer, ControlMessage> {
 		/**
 		 * Returned strings are in the form "status 1", etc.
 		 */
-		String ans = dogUDP.sendCommand(UdpCommands.STATUS, 1000);
+		String ans = dogUDP.sendCommand(UdpCommands.STATUS.toString(), 1000);
 		if (ans == null || ans.length() < 8) {
 //			publish(new ControlMessage("Status Error: " + dogUDP.getLastError()));
 			commandLog.logItem("Status Error: " + dogUDP.getLastError());

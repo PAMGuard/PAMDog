@@ -24,6 +24,11 @@ import javax.swing.JOptionPane;
  *
  */
 public class ConfigSettings {
+	
+	/**
+	 * Override path for config file. If null, use default path. 
+	 */
+	public String configOverridePath = null; 
 
 	/**
 	 * Save PamDog configuration
@@ -83,6 +88,10 @@ public class ConfigSettings {
 	 * @return
 	 */
 	protected File getConfigFile() {
+		if (configOverridePath!=null) {
+			return new File(configOverridePath);
+		}
+		//use default path
 		String setFileName = getPamguardFolder() + File.separator + getSettingsFileName();
 		return new File(setFileName);
 	}
@@ -420,4 +429,15 @@ public class ConfigSettings {
 		}
 		return size;
 	}
+	
+
+	
+	public String getConfigOverridePath() {
+		return configOverridePath;
+	}
+
+	public void setConfigOverridePath(String configOverridePath) {
+		this.configOverridePath = configOverridePath;
+	}
+
 }
